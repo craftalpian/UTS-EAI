@@ -1,6 +1,3 @@
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 5000;
 const amqp = require("amqplib/callback_api");
 
 amqp.connect("amqp://localhost", (connectionError, connection) => {
@@ -22,8 +19,4 @@ amqp.connect("amqp://localhost", (connectionError, connection) => {
       { noAck: true }
     );
   });
-});
-
-app.listen(port, () => {
-  console.log(`Subscriber listening at http://172.18.0.10:${port}`);
 });

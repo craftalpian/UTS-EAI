@@ -1,6 +1,3 @@
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 4000;
 const amqp = require("amqplib/callback_api");
 const randomstring = require("randomstring");
 
@@ -27,8 +24,4 @@ amqp.connect("amqp://localhost", (connectionError, connection) => {
       connection.close();
     });
   });
-});
-
-app.listen(port, () => {
-  console.log(`Publisher listening at http://172.18.0.9:${port}`);
 });
