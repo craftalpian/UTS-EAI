@@ -8,7 +8,7 @@ amqp.connect("amqp://localhost", (connectionError, connection) => {
   connection.createChannel((channelError, channel) => {
     if (channelError) throw channelError;
 
-    const queue = "antrian pian";
+    const queue = "livechat";
 
     const rl = readline.createInterface({
       input: process.stdin,
