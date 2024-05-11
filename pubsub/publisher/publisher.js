@@ -1,30 +1,37 @@
-const amqp = require("amqplib/callback_api");
-const randomstring = require("randomstring");
+const amqp = require("amqplib");
+// Menggunakan package moment untuk mengatur timezone
+const moment = require("moment-timezone");
+// Menampilkan semua log disertai timestamp
+const logTimestamp = require("log-timestamp");
+// Mengatur agar timestamp menggunakan format timezone Indonesia
+logTimestamp(
+  () => `[${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS")}]`
+);
 
-amqp.connect("amqp://localhost", (connectionError, connection) => {
-  if (connectionError) throw connectionError;
-  
-  connection.createChannel((channelError, channel) => {
-    if (channelError) throw channelError;
-    
-    let i = 0;
-    const queue = "livechat";
+(async () => {
+  try {
+    const connection = await amqp.connect("amqp://localhost");
+    const channel = await connection.createChannel();
 
-    channel.assertQueue(queue, { durable: false });
+    const queueKey = "direct_pian";
 
-    setInterval(() => {
-      i = i+1
-      const message = `Data terkirim | pesan: ${i}`;
-  
-      channel.sendToQueue(queue, Buffer.from(message));
-      console.log(
-        `Message [${message}] sent to queue [${queue}] ${new Date().toISOString()}`
-      );
-    }, 1500);
+    await channel.assertQueue(queueKey, { durable: false });
+
+    for (let i = 0; i < 10; i++) {
+      console.time("sendQueue");
+      const message = `Urutan: ${i}`;
+
+      await channel.sendToQueue(queueKey, Buffer.from(message));
+
+      console.log(`Berhasil mengirimkan ${message} ke ${queueKey}`);
+      console.timeEnd("sendQueue");
+    }
 
     process.on("beforeExit", () => {
       channel.close();
       connection.close();
     });
-  });
-});
+  } catch (error) {
+    console.error("Error:", error);
+  }
+})();

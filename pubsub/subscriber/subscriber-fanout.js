@@ -1,11 +1,18 @@
 const amqp = require("amqplib");
+// Menggunakan package moment untuk mengatur timezone
+const moment = require("moment-timezone");
+// Menampilkan semua log disertai timestamp
+const logTimestamp = require("log-timestamp");
+// Mengatur agar timestamp menggunakan format timezone Indonesia
+logTimestamp(
+  () => `[${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS")}]`
+);
 
 async function subscribe() {
   try {
     const connection = await amqp.connect("amqp://localhost");
     const channel = await connection.createChannel();
-
-    const exchangeName = "fanout_channel";
+    const exchangeName = "fanout_pian";
 
     await channel.assertExchange(exchangeName, "fanout", { durable: false });
 
@@ -14,16 +21,10 @@ async function subscribe() {
     // Binding queue dengan exchange
     await channel.bindQueue(queue, exchangeName, "");
 
-    console.log(
-      `Waiting for messages in queue [${queue}]. To exit press CTRL+C`
-    );
-
     await channel.consume(
       queue,
       (message) => {
-        console.log(
-          `Message [${message.content.toString()}] received from queue [${queue}]`
-        );
+        console.log(`Menerima pesan: [${message.content.toString()}]`);
       },
       { noAck: true }
     );

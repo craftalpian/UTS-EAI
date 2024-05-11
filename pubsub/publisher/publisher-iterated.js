@@ -8,22 +8,26 @@ logTimestamp(
   () => `[${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS")}]`
 );
 
-async function publish() {
+(async () => {
   try {
     const connection = await amqp.connect("amqp://localhost");
     const channel = await connection.createChannel();
-    const channelName = "fanout_pian";
+
+    const queueKey = "direct_pian";
+
+    await channel.assertQueue(queueKey, { durable: false });
+
     let i = 1;
 
-    await channel.assertExchange(channelName, "fanout", { durable: false });
+    setInterval(async () => {
+      console.time("sendQueue");
+      const message = `Urutan: ${i}`;
 
-    setInterval(() => {
-      const message = `Data terkirim | pesan: ${i}`;
+      await channel.sendToQueue(queueKey, Buffer.from(message));
 
-      channel.publish(channelName, "", Buffer.from(message));
-      console.log(
-        `Mengirim pesan [${message}] ke channel broadcast [${channelName}]`
-      );
+      console.log(`Berhasil mengirimkan ${message} ke ${queueKey}`);
+      console.timeEnd("sendQueue");
+
       i++;
     }, 1500);
 
@@ -34,6 +38,4 @@ async function publish() {
   } catch (error) {
     console.error("Error:", error);
   }
-}
-
-publish();
+})();

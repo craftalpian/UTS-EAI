@@ -1,22 +1,32 @@
-const amqp = require("amqplib/callback_api");
+const amqp = require("amqplib");
+// Menggunakan package moment untuk mengatur timezone
+const moment = require("moment-timezone");
+// Menampilkan semua log disertai timestamp
+const logTimestamp = require("log-timestamp");
+// Mengatur agar timestamp menggunakan format timezone Indonesia
+logTimestamp(
+  () => `[${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS")}]`
+);
 
-amqp.connect("amqp://localhost", (connectionError, connection) => {
-  if (connectionError) throw connectionError;
+(async () => {
+  try {
+    const connection = await amqp.connect("amqp://localhost");
+    const channel = await connection.createChannel();
 
-  connection.createChannel((channelError, channel) => {
-    if (channelError) throw channelError;
+    const queueKey = "direct_pian";
 
-    const queue = "livechat";
+    await channel.assertQueue(queueKey, { durable: false });
 
-    channel.assertQueue(queue, { durable: false });
     channel.consume(
-      queue,
-      (message) => {
+      queueKey,
+      (msg) => {
         console.log(
-          `Message [${message.content.toString()}] received froms queue [${queue}]`
+          `Berhasil mendapatkan ${msg.content.toString()} dari ${queueKey}`
         );
       },
       { noAck: true }
     );
-  });
-});
+  } catch (error) {
+    console.error("Error:", error);
+  }
+})();
