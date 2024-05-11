@@ -1,7 +1,13 @@
 // Menggunakan dotenv untuk mengampil variabel environment
 require("dotenv").config();
+// Menggunakan package moment untuk mengatur timezone
+const moment = require("moment-timezone");
 // Menampilkan semua log disertai timestamp
-require("log-timestamp");
+const logTimestamp = require("log-timestamp");
+// Mengatur agar timestamp menggunakan format timezone Indonesia
+logTimestamp(
+  () => `[${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS")}]`
+);
 // Menggunakan framework ExpressJs
 const express = require("express");
 // Menggunakan randomstring untuk membuat id secara acak
@@ -29,13 +35,15 @@ app.post("/book", (req, res) => {
     id: `book-${id}`,
   });
 
+  console.log(`data diterima dari trigger: ${id}`)
+
   // Mengatur proses berhenti mencatat waktu untuk label Received Post
-  console.timeEnd("Received Post", `data diterima dari trigger: ${id}`);
+  console.timeEnd("Received Post");
 });
 
 // Endpoint /gadget untuk menerima data yang diambil dalam HTTP GET
 app.get("/gadget", (_, res) => {
-// Mengatur awal waktu proses menerima request sampai mengembalikan data
+  // Mengatur awal waktu proses menerima request sampai mengembalikan data
   console.time("Received Get");
 
   // Membuat id random dari package randomstring
@@ -47,8 +55,10 @@ app.get("/gadget", (_, res) => {
     id: `gadget-${id}`,
   });
 
+  console.log(`data yang dikembalikan dengan id: ${id}`)
+
   // Mengatur proses berhenti mencatat waktu untuk label Received Get
-  console.timeEnd("Received Get", `data yang dikembalikan dengan id: ${id}`);
+  console.timeEnd("Received Get");
 });
 
 app.listen(port, () => {

@@ -1,7 +1,13 @@
 // Menggunakan dotenv untuk mengampil variabel environment
 require("dotenv").config();
+// Menggunakan package moment untuk mengatur timezone
+const moment = require("moment-timezone");
 // Menampilkan semua log disertai timestamp
-require("log-timestamp");
+const logTimestamp = require("log-timestamp");
+// Mengatur agar timestamp menggunakan format timezone Indonesia
+logTimestamp(
+  () => `[${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS")}]`
+);
 // Menggunakan framework ExpressJs
 const express = require("express");
 // Menggunakan Axios untuk mengirim data ke backend
@@ -38,11 +44,10 @@ app.get("/trigger", async (_, res) => {
       id,
     });
 
+    console.log(`id yang dikirim: ${id} | id yang diterima: ${postData?.id}`);
+
     // Memberhentikan proses perhitungan waktu yang dibutuhkan
-    console.timeEnd(
-      "LoopPost",
-      `id yang dikirim: ${id} | id yang diterima: ${postData?.id}`
-    );
+    console.timeEnd("LoopPost");
 
     /**
      * Pada percobaan kedua, saya menguji untuk mengambil data dari endpoint
@@ -56,8 +61,10 @@ app.get("/trigger", async (_, res) => {
     // Mengambil data dari endpoint /gadget
     const { data: getData } = await axios.get("http://localhost:2000/gadget");
 
+    console.log(`berhasil mengambil id: ${getData?.id}`);
+
     // Memberhentikan perulangan
-    console.timeEnd("LoopGet", `berhasil mengambil id: ${getData?.id}`);
+    console.timeEnd("LoopGet");
   }
 
   // Menyelesaikan waktu dalam proses iterasi sebanyak n-kali mengirimkan data secara bersamaan
